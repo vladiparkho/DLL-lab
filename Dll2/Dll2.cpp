@@ -2,30 +2,15 @@
 #include <stdio.h>
 #include <iostream>
 BOOLEAN GetAuthor(LPSTR buffer, DWORD dwBufferSize, DWORD* pdwBytesWritten) {
-    char name[] = "Владимир Пархоменко";
-    if (buffer == nullptr) {
-        *pdwBytesWritten = strlen(name) * sizeof(char)+1;
-        return true;
-    }
+    char name[] = "Vladimir Parkhomenko";
     bool res = strcpy_s(buffer, dwBufferSize, name);
-    if (res != 0) {
-        return false;
-    }
-    //?* pdwBytesWritten = ?
-    return res;
+    return res == 0;
 
 }
 BOOLEAN GetDescription(LPSTR buffer, DWORD dwBufferSize, DWORD* pdwBytesWritten) {
     char msg[] = "Dll2. Hardware information";
-    if (buffer == nullptr) {
-        *pdwBytesWritten = strlen(msg) * sizeof(char)+1;
-        return true;
-    }
     bool res = strcpy_s(buffer, dwBufferSize, msg);
-    if (res != 0) {
-        return false;
-    }
-    return res;
+    return res == 0;
 }
 VOID Execute() {
     SYSTEM_INFO siSysInfo;
@@ -35,7 +20,6 @@ VOID Execute() {
         siSysInfo.dwNumberOfProcessors);
     printf("  Page size: %u\n", siSysInfo.dwPageSize);
     printf("  Processor type: %u\n", siSysInfo.dwProcessorType);
-
     printf("  Active processor mask: %u\n",
         siSysInfo.dwActiveProcessorMask);
     printf("  The architecture-dependent processor level: %u\n",

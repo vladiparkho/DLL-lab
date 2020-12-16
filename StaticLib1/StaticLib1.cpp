@@ -3,11 +3,11 @@
 #include <tchar.h>
 #include <strsafe.h>
 #include <stdlib.h>
+#include <vector>
 
 bool IsDLL(LPSTR filename) {
 
 	HANDLE hFile = CreateFile(filename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
-
 	HANDLE hFileMapping = CreateFileMapping(hFile, NULL, PAGE_READONLY, 0, 0, NULL);
 	if (hFileMapping == NULL)
 		return false;
@@ -32,7 +32,8 @@ bool IsDLL(LPSTR filename) {
 	return result;
 }
 
-void ListDLLs(LPCSTR path, LPCSTR* dll_list, size_t* ret_dll_count) {
+BOOL ListDLLs(LPCSTR path, std::vector<LPSTR> &dll_list) {
+	//std::vector<LPSTR> dll_list;
 	TCHAR szDir[MAX_PATH];
 	strcpy_s(szDir, MAX_PATH, path);
 	strcat_s(szDir, MAX_PATH, TEXT("\\*"));
@@ -42,25 +43,13 @@ void ListDLLs(LPCSTR path, LPCSTR* dll_list, size_t* ret_dll_count) {
 	hFind = FindFirstFile(szDir, &ffd);
 	if (INVALID_HANDLE_VALUE == hFind) {
 		_tprintf(TEXT("Error finding first file\n"));
-		return;
+		return FALSE;
 	}
-
-	bool was_dll_count_allocated = false;
-	if (ret_dll_count == NULL) {
-		ret_dll_count = (size_t*)malloc(sizeof(size_t));
-		if (ret_dll_count == NULL) {
-			perror("Couldn't allocate ret_dll_count");
-			return;
-		}
-		*ret_dll_count = 0;
-		was_dll_count_allocated = true;
-	}
-
 	do {
 		LPSTR newPath = (char*)malloc(sizeof(char) * MAX_PATH);
 		if (newPath == NULL) {
 			perror("Couldn't allocate newPath");
-			return;
+			return FALSE;
 		}
 		strcpy_s(newPath, MAX_PATH, path);
 		strcat_s(newPath, MAX_PATH, TEXT("\\"));
@@ -68,23 +57,15 @@ void ListDLLs(LPCSTR path, LPCSTR* dll_list, size_t* ret_dll_count) {
 		if (ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
 			if ((strcmp(ffd.cFileName, ".") == 0) || (strcmp(ffd.cFileName, "..") == 0))
 				continue;
-			ListDLLs(newPath, dll_list, ret_dll_count);
+			ListDLLs(newPath,dll_list);
 		}
 		else {
 			if (IsDLL(newPath)) {
-				if (dll_list != NULL) {
-					dll_list[*ret_dll_count] = newPath;
-				}
-				if (ret_dll_count != NULL) {
-					++* ret_dll_count;
-				}
+				dll_list.push_back(newPath);
 			}
 		}
 	} while (FindNextFile(hFind, &ffd) != 0);
-
-	if (was_dll_count_allocated) {
-		free(ret_dll_count);
-	}
-
 	FindClose(hFind);
+
+	return TRUE;
 }

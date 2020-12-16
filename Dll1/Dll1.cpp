@@ -4,29 +4,14 @@
 
 BOOLEAN GetAuthor(LPSTR buffer, DWORD dwBufferSize, DWORD* pdwBytesWritten) {
     char name[] = "Vladimir Parkhomenko";
-    if (buffer == nullptr) {
-        *pdwBytesWritten = strlen(name) * sizeof(char)+1;
-        return true;
-    }
     bool res = strcpy_s(buffer, dwBufferSize, name);
-    if (res != 0) {
-        return false;
-    }
-
-    return res;
+    return res == 0;
 
 }
 BOOLEAN GetDescription(LPSTR buffer, DWORD dwBufferSize, DWORD* pdwBytesWritten) {
     char msg[] = "Dll1. Performance Monitor";
-    if (buffer == nullptr) {
-        *pdwBytesWritten = strlen(msg) * sizeof(char)+1;
-        return true;
-    }
     bool res = strcpy_s(buffer, dwBufferSize, msg);
-    if (res != 0) {
-        return false;
-    }
-    return res;
+    return res == 0;
 }
 VOID Execute() {
     STARTUPINFO si;
